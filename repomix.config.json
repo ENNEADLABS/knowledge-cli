@@ -1,0 +1,11 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "style": "xml",
+    "filePath": ".knowledge/repo-snapshot.xml"
+  },
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true
+  }
+}

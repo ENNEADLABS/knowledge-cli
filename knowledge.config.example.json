@@ -1,0 +1,51 @@
+{
+  "paths": {
+    "decisionsDir": "docs/decisions",
+    "blueprintDir": "docs",
+    "layoutFile": "docs/layout.md",
+    "specsDir": "specs"
+  },
+  "checks": {
+    "fileSize": {
+      "enabled": true,
+      "limits": [
+        { "glob": "src/services/**/*.ts", "maxLines": 200, "tolerance": 0.2 },
+        { "glob": "src/components/**/*.tsx", "maxLines": 150, "tolerance": 0.2 }
+      ]
+    },
+    "debtMarkers": {
+      "enabled": true,
+      "filesGlob": "src/**/*.{ts,tsx}",
+      "markers": ["TODO", "FIXME", "HACK", ": any", "@ts-ignore", "eslint-disable"]
+    },
+    "docDrift": {
+      "enabled": true,
+      "routesGlob": "src/routes/*"
+    },
+    "adrCoverage": {
+      "enabled": true
+    }
+  },
+  "riskRules": [
+    {
+      "id": "db-migrations",
+      "label": "Migrations / schema DB — souvent irreversible en prod",
+      "match": "db/migrations/**",
+      "severity": "error"
+    },
+    {
+      "id": "payments",
+      "label": "Code lie au paiement / facturation",
+      "match": "src/services/{invoice,payment}*.ts",
+      "severity": "warning"
+    }
+  ],
+  "repomix": {
+    "scan": {
+      "exclude": ["vendor/**"]
+    },
+    "agentContext": {
+      "exclude": ["vendor/**", "tests/**"]
+    }
+  }
+}
