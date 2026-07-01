@@ -17,8 +17,10 @@
   "scripts": {
     "test": "vitest run"
   },
+  "dependencies": {
+    "repomix": "1.16.0"
+  },
   "devDependencies": {
-    "repomix": "1.16.0",
     "vitest": "^4.1.1"
   }
 }

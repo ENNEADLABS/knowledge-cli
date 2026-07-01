@@ -1,5 +1,7 @@
 # knowledge
 
+[![test](https://github.com/ENNEADLABS/knowledge-cli/actions/workflows/test.yml/badge.svg)](https://github.com/ENNEADLABS/knowledge-cli/actions/workflows/test.yml)
+
 Un CLI pour maintenir la couche de connaissance d'un repo — pas le code, la
 connaissance *sur* le code : les décisions d'architecture, la cartographie du
 projet, les zones à risque, la synchro entre la doc et la réalité.
@@ -47,6 +49,11 @@ Ajoute un script à ton `package.json` :
 }
 ```
 
+Le `package.json` de ce repo déclare un champ `bin` (`knowledge`), mais ce
+paquet n'est pas publié sur un registre npm : la seule installation
+supportée est le git-clone ci-dessus, pas `npm i -g knowledge-cli` ni
+`npx knowledge-cli`.
+
 Puis écris ton `knowledge.config.json` à la racine de ton projet — voir
 `knowledge.config.example.json` pour un exemple commenté ci-dessous, et la
 section Configuration.
@@ -67,7 +74,11 @@ section Configuration.
 
 Chaque check se désactive proprement (`enabled: false` ou simple absence)
 plutôt que de planter si un chemin ou une convention manque. Un repo sans
-config du tout continue de fonctionner sur des défauts génériques.
+config du tout continue de fonctionner sur des défauts génériques (voir
+`DEFAULT_CONFIG` dans `lib/config.mjs`). Le bloc ci-dessous montre la forme
+attendue du fichier, avec des valeurs d'exemple — pas les défauts intégrés,
+qui diffèrent volontairement (ex. `blueprintDir` vaut `"blueprint"` par
+défaut).
 
 ```jsonc
 {
@@ -124,8 +135,23 @@ prouver le design config-driven — ce portage a immédiatement fait remonter
 un vrai bug dans le matcher de glob (`{a,b/**}` cassait la regex), corrigé
 depuis.
 
+Les décisions structurantes de ce repo (design config-driven, matcher glob
+maison, périmètre single-repo) sont elles-mêmes tracées dans
+[`docs/decisions/`](docs/decisions/), générées avec `knowledge adr new` — cet
+outil s'applique à lui-même.
+
 Inspiré de [Repomix](https://repomix.com) (empaqueter un repo pour une IA) et
 du format [MADR](https://adr.github.io/madr/) pour les ADR.
+
+## Roadmap
+
+- [ ] Agrégateur portfolio (multi-repo, multi-app) — hors périmètre de ce
+      repo par design (voir [ADR-0003](docs/decisions/0003-perimetre-single-repo-agregation-portfolio-hors-scope.md)),
+      traité dans un projet séparé consommant les sorties `.knowledge/` de
+      plusieurs repos.
+- [x] CI GitHub Actions (`npm test` sur push/PR).
+- [ ] Publication npm si le chemin `npx knowledge-cli` doit devenir réel
+      (voir note dans la section Installation).
 
 ## License
 
