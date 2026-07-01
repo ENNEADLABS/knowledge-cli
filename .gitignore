@@ -1,3 +1,4 @@
 node_modules/
 .knowledge/
 .DS_Store
+.claude/
