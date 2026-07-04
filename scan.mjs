@@ -5,8 +5,14 @@ import { collectFindings } from "./validate.mjs";
 export async function run(args, config) {
   mkdirSync(".knowledge", { recursive: true });
 
+  const generatedAt = new Date().toISOString();
   const snapshotPath = ".knowledge/repo-snapshot.xml";
-  const repomixArgs = ["-o", snapshotPath];
+  const repomixArgs = [
+    "-o",
+    snapshotPath,
+    "--header-text",
+    `Genere par knowledge-cli le ${generatedAt} — snapshot a regenerer avant usage.`,
+  ];
   if (config.repomix.scan.exclude.length > 0) {
     repomixArgs.push("-i", config.repomix.scan.exclude.join(","));
   }
@@ -23,7 +29,7 @@ export async function run(args, config) {
   writeFileSync(
     signalsPath,
     JSON.stringify(
-      { generatedAt: new Date().toISOString(), snapshotPath, validate: result },
+      { generatedAt, snapshotPath, validate: result },
       null,
       2,
     ),

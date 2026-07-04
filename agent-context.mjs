@@ -12,6 +12,10 @@ export async function run(args, config) {
     mkdirSync(".knowledge", { recursive: true });
     repomixArgs = ["--style", "markdown", "-o", outputPath];
   }
+  repomixArgs.push(
+    "--header-text",
+    `Genere par knowledge-cli le ${new Date().toISOString()} — snapshot a regenerer avant usage.`,
+  );
   if (config.repomix.agentContext.exclude.length > 0) {
     repomixArgs.push("-i", config.repomix.agentContext.exclude.join(","));
   }
