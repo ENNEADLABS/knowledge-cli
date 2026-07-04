@@ -69,6 +69,12 @@ Mode check (`checks/counters.mjs`), avec trois choix de semantique :
   filtre les fichiers du glob avant comptage — necessaire pour les splits du
   type « 25 presets = 14 document + 11 routable » (compter les YAML contenant
   `^routing:`). Deterministe, pas d'execution : compatible avec le contrat.
+- **`source.notContaining` accepte** (complement symetrique, combinable). Le
+  cablage reel du split ci-dessus a montre que la moitie « document » n'a
+  aucun marqueur positif : elle ne se compte que par absence de `^routing:`.
+  Sans complement, la seule issue etait une regex a lookbehind cryptique dans
+  la config — illisible et fragile. Meme contrat : regex flag `m`, invalide
+  = error.
 - **`source.command` rejete.** Une verite calculee par commande arbitraire
   (`pytest --co` pour un compte de tests) exigerait d'executer du shell
   declare dans `knowledge.config.json` : une config est une donnee, et

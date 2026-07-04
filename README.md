@@ -142,6 +142,10 @@ de deux façons :
 - `source.containing` (optionnel) : regex, flag `m` — ne compte que les
   fichiers du glob dont le contenu matche (ex. les YAML contenant
   `^routing:`). Un `containing` invalide est une `error`, pas un compte à 0.
+- `source.notContaining` (optionnel) : le complément — ne compte que les
+  fichiers dont le contenu ne matche pas. Un split « 25 = 14 + 11 » se garde
+  ainsi entièrement : le 11 par présence du marqueur, le 14 par absence.
+  Combinable avec `containing` ; mêmes règles (flag `m`, invalide = `error`).
 
 La comparaison citation/compte est **numérique**, pas textuelle : « 008 »
 matche un compte de 8 (chaînes de migrations zéro-paddées). Figé par un test.

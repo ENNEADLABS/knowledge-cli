@@ -17,8 +17,12 @@ export function checkCounters({ items, counts, docs, discoveryDocs = {}, enabled
     // Precondition cote verite : une source vide (repertoire demenage, glob perime)
     // invalide la mesure — on ne compare jamais contre une fausse verite.
     if (count === 0) {
-      const sourceLabel = item.source.containing
-        ? `glob "${item.source.glob}" avec containing "${item.source.containing}"`
+      const filters = ["containing", "notContaining"]
+        .filter((key) => item.source[key])
+        .map((key) => `${key} "${item.source[key]}"`)
+        .join(" et ");
+      const sourceLabel = filters
+        ? `glob "${item.source.glob}" avec ${filters}`
         : `glob "${item.source.glob}"`;
       findings.push(
         finding(

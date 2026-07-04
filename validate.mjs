@@ -95,24 +95,34 @@ function runCounters(config) {
 
 // source.glob passe par fs.globSync (extglob "!(...)" supporte, verrouille par
 // validate.test.mjs) — pas par lib/glob.mjs comme les autres patterns de config.
-// containing : regex evaluee avec le flag "m" (predicats ancres en debut de ligne).
+// containing / notContaining : regex flag "m" (predicats ancres en debut de ligne),
+// combinables — un split "25 = 14 + 11" se garde par presence ET par absence du marqueur.
 function countSource({ name, source }, findings) {
   const files = uniqueFiles(globSync(source.glob));
-  if (!source.containing) return files.length;
 
-  let regex;
-  try {
-    regex = new RegExp(source.containing, "m");
-  } catch {
-    findings.push({
-      rule: "counters",
-      severity: "error",
-      file: source.glob,
-      message: `containing invalide pour le compteur "${name}" : ${source.containing}`,
-    });
-    return null;
+  const predicates = [];
+  for (const key of ["containing", "notContaining"]) {
+    if (!source[key]) continue;
+    try {
+      predicates.push({ key, regex: new RegExp(source[key], "m") });
+    } catch {
+      findings.push({
+        rule: "counters",
+        severity: "error",
+        file: source.glob,
+        message: `${key} invalide pour le compteur "${name}" : ${source[key]}`,
+      });
+      return null;
+    }
   }
-  return files.filter((file) => regex.test(readFileSync(file, "utf-8"))).length;
+  if (predicates.length === 0) return files.length;
+
+  return files.filter((file) => {
+    const content = readFileSync(file, "utf-8");
+    return predicates.every(({ key, regex }) =>
+      key === "containing" ? regex.test(content) : !regex.test(content),
+    );
+  }).length;
 }
 
 function uniqueFiles(paths) {

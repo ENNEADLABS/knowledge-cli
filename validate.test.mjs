@@ -72,6 +72,45 @@ describe("collectFindings — counters sur fs reel", () => {
     expect(collectFindings(config).checks).toEqual([]);
   });
 
+  it("compte via source.notContaining les fichiers dont le contenu ne matche pas", () => {
+    mkdirSync("presets", { recursive: true });
+    writeFileSync("presets/a.yaml", "name: a\nrouting:\n  target: x\n");
+    writeFileSync("presets/b.yaml", "name: b\nrouting:\n  target: y\n");
+    writeFileSync("presets/c.yaml", "name: c\n");
+    mkdirSync("docs", { recursive: true });
+    writeFileSync("docs/architecture.md", "25 presets dont 1 presets document.");
+
+    const config = countersConfig([
+      {
+        name: "presets-document",
+        source: { glob: "presets/*.yaml", notContaining: "^routing:" },
+        citations: [{ file: "docs/architecture.md", pattern: "(\\d+) presets document" }],
+      },
+    ]);
+
+    expect(collectFindings(config).checks).toEqual([]);
+  });
+
+  it("signale en erreur un notContaining invalide sans crasher ni comparer", () => {
+    mkdirSync("presets", { recursive: true });
+    writeFileSync("presets/a.yaml", "name: a\n");
+    mkdirSync("docs", { recursive: true });
+    writeFileSync("docs/architecture.md", "1 presets document");
+
+    const config = countersConfig([
+      {
+        name: "presets-document",
+        source: { glob: "presets/*.yaml", notContaining: "([" },
+        citations: [{ file: "docs/architecture.md", pattern: "(\\d+) presets document" }],
+      },
+    ]);
+
+    const { checks } = collectFindings(config);
+    expect(checks).toHaveLength(1);
+    expect(checks[0].severity).toBe("error");
+    expect(checks[0].message).toContain("notContaining invalide");
+  });
+
   it("signale en erreur un containing invalide sans crasher ni comparer", () => {
     mkdirSync("presets", { recursive: true });
     writeFileSync("presets/a.yaml", "routing: x\n");

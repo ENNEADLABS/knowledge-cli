@@ -43,6 +43,13 @@
           "citations": [
             { "file": "docs/architecture.md", "pattern": "(\\d+) presets routables" }
           ]
+        },
+        {
+          "name": "presets-document",
+          "source": { "glob": "presets/*.yaml", "notContaining": "^routing:" },
+          "citations": [
+            { "file": "docs/architecture.md", "pattern": "(\\d+) presets document" }
+          ]
         }
       ]
     }
