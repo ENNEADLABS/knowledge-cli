@@ -17,11 +17,14 @@ export function checkCounters({ items, counts, docs, discoveryDocs = {}, enabled
     // Precondition cote verite : une source vide (repertoire demenage, glob perime)
     // invalide la mesure — on ne compare jamais contre une fausse verite.
     if (count === 0) {
+      const sourceLabel = item.source.containing
+        ? `glob "${item.source.glob}" avec containing "${item.source.containing}"`
+        : `glob "${item.source.glob}"`;
       findings.push(
         finding(
           "error",
           item.source.glob,
-          `Source vide pour le compteur "${item.name}" (glob "${item.source.glob}" ne matche aucun fichier) — citations non comparees`,
+          `Source vide pour le compteur "${item.name}" (${sourceLabel} ne matche aucun fichier) — citations non comparees`,
         ),
       );
       continue;
@@ -60,6 +63,8 @@ function checkCitation({ name, count, file, pattern, content }) {
     ];
   }
 
+  // Comparaison numerique voulue, pas textuelle : une citation zero-paddee
+  // ("008", chaines de migrations) doit matcher le compte 8. Fige par un test.
   return matches
     .filter((match) => Number(match[1]) !== count)
     .map((match) => finding("error", file, `Cite ${match[1]} ${name}, le code en compte ${count}`));

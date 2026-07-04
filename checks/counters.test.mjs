@@ -135,6 +135,38 @@ describe("checkCounters", () => {
     expect(findings[0].message).toContain("groupe de capture");
   });
 
+  it("compare numeriquement : une citation zero-paddee matche le compte", () => {
+    const findings = checkCounters({
+      items: [
+        {
+          name: "alembic_head",
+          source: { glob: "db/migrations/*.py" },
+          citations: [{ file: "docs/db.md", pattern: "head : (\\d+)" }],
+        },
+      ],
+      counts: { alembic_head: 8 },
+      docs: { "docs/db.md": "Chaine de migrations, head : 008." },
+    });
+    expect(findings).toEqual([]);
+  });
+
+  it("mentionne le containing dans l'erreur de source vide quand il est configure", () => {
+    const findings = checkCounters({
+      items: [
+        {
+          name: "presets-routables",
+          source: { glob: "presets/*.yaml", containing: "^routing:" },
+          citations: [{ file: "docs/architecture.md", pattern: "(\\d+) presets routables" }],
+        },
+      ],
+      counts: { "presets-routables": 0 },
+      docs: { "docs/architecture.md": "11 presets routables" },
+    });
+    expect(findings).toHaveLength(1);
+    expect(findings[0].severity).toBe("error");
+    expect(findings[0].message).toContain("^routing:");
+  });
+
   it("retourne un tableau vide si enabled est false", () => {
     const findings = checkCounters({
       items: ITEMS,

@@ -58,3 +58,24 @@ Mode check (`checks/counters.mjs`), avec trois choix de semantique :
   le contrat « le CLI n'ecrit jamais dans les sources ».
 - `validate` sort desormais en exit code ≠ 0 des qu'un compteur ment — le
   futur gate CI en herite sans travail supplementaire.
+
+## Amendements — 2026-07-04, retour du premier consommateur (distiller)
+
+- **Extglob assume et fige.** `source.glob` et `discoveryGlob` passent par
+  `fs.globSync` de Node (pas `lib/glob.mjs`) ; la negation `!(...)` est le
+  seul mecanisme d'exclusion et des configs consommatrices en dependent.
+  Documente au README, verrouille par `validate.test.mjs`.
+- **`source.containing` accepte.** Predicat de contenu (regex, flag `m`) qui
+  filtre les fichiers du glob avant comptage — necessaire pour les splits du
+  type « 25 presets = 14 document + 11 routable » (compter les YAML contenant
+  `^routing:`). Deterministe, pas d'execution : compatible avec le contrat.
+- **`source.command` rejete.** Une verite calculee par commande arbitraire
+  (`pytest --co` pour un compte de tests) exigerait d'executer du shell
+  declare dans `knowledge.config.json` : une config est une donnee, et
+  `validate` doit rester sur a lancer sur un repo fraichement clone. Ces
+  verites passent par un artefact genere par la CI (badge, fichier compte)
+  que le compteur peut ensuite citer — pas par le CLI.
+- **Comparaison numerique voulue.** `Number("008") === 8` : une citation
+  zero-paddee (head alembic) matche le compte entier. Ce n'est pas une
+  coincidence mais un contrat, fige par un test pour survivre a un refactor
+  vers une comparaison textuelle.

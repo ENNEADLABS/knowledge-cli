@@ -69,12 +69,18 @@ function runCounters(config) {
   const { items, discoveryGlob } = config.checks.counters;
   if (items.length === 0) return [];
 
-  const counts = Object.fromEntries(
-    items.map(({ name, source }) => [name, uniqueFiles(globSync(source.glob)).length]),
-  );
+  const findings = [];
+  const measurable = [];
+  const counts = {};
+  for (const item of items) {
+    const count = countSource(item, findings);
+    if (count === null) continue;
+    counts[item.name] = count;
+    measurable.push(item);
+  }
 
   const docs = {};
-  for (const { file } of items.flatMap(({ citations }) => citations)) {
+  for (const { file } of measurable.flatMap(({ citations }) => citations)) {
     if (!(file in docs)) docs[file] = existsSync(file) ? readFileSync(file, "utf-8") : null;
   }
 
@@ -84,7 +90,29 @@ function runCounters(config) {
       )
     : {};
 
-  return checkCounters({ items, counts, docs, discoveryDocs });
+  return [...findings, ...checkCounters({ items: measurable, counts, docs, discoveryDocs })];
+}
+
+// source.glob passe par fs.globSync (extglob "!(...)" supporte, verrouille par
+// validate.test.mjs) — pas par lib/glob.mjs comme les autres patterns de config.
+// containing : regex evaluee avec le flag "m" (predicats ancres en debut de ligne).
+function countSource({ name, source }, findings) {
+  const files = uniqueFiles(globSync(source.glob));
+  if (!source.containing) return files.length;
+
+  let regex;
+  try {
+    regex = new RegExp(source.containing, "m");
+  } catch {
+    findings.push({
+      rule: "counters",
+      severity: "error",
+      file: source.glob,
+      message: `containing invalide pour le compteur "${name}" : ${source.containing}`,
+    });
+    return null;
+  }
+  return files.filter((file) => regex.test(readFileSync(file, "utf-8"))).length;
 }
 
 function uniqueFiles(paths) {

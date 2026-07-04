@@ -31,10 +31,17 @@
       "items": [
         {
           "name": "routers",
-          "source": { "glob": "api/routers/*.py" },
+          "source": { "glob": "api/routers/!(__init__).py" },
           "citations": [
             { "file": "docs/architecture.md", "pattern": "(\\d+) routers" },
             { "file": "CLAUDE.md", "pattern": "(\\d+) routers" }
+          ]
+        },
+        {
+          "name": "presets-routables",
+          "source": { "glob": "presets/*.yaml", "containing": "^routing:" },
+          "citations": [
+            { "file": "docs/architecture.md", "pattern": "(\\d+) presets routables" }
           ]
         }
       ]

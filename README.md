@@ -119,15 +119,32 @@ fait par un petit matcher maison (`lib/glob.mjs`, pas de dépendance
 `minimatch`/`glob`) qui couvre `**`, `*` et `{a,b,c}` — y compris un wildcard
 imbriqué dans une accolade (`db/{schema.ts,migrations/**}`).
 
+Exception : `counters` (`source.glob`, `discoveryGlob`) passe par
+`fs.globSync` de Node, qui supporte en plus la négation extglob `!(...)`
+(ex. `api/routes/!(__init__).py`) — seul mécanisme d'exclusion disponible,
+verrouillé par un test d'intégration (`validate.test.mjs`). Deux moteurs de
+glob coexistent donc ; c'est documenté ici pour ne surprendre personne, et
+leur unification est au backlog.
+
 `checks/doc-drift.mjs` est une heuristique : elle attend une pipe-table
 Markdown avec une colonne dont l'en-tête contient "route" (insensible à la
 casse). Si ton repo n'a pas ce genre de doc, laisse `docDrift.enabled: false`.
 
 `checks/counters.mjs` attrape les nombres qui mentent : une doc qui déclare
 « 17 routers » alors que le code en compte 19. Chaque compteur relie une
-vérité côté code (`source.glob`, nombre de fichiers matchés) aux endroits où
-le nombre est cité (`citations[]` : fichier + regex avec un groupe de capture
-sur le nombre — un compteur a typiquement plusieurs sites de citation).
+vérité côté code (`source`) aux endroits où le nombre est cité
+(`citations[]` : fichier + regex avec un groupe de capture sur le nombre —
+un compteur a typiquement plusieurs sites de citation). La vérité se mesure
+de deux façons :
+
+- `source.glob` : nombre de fichiers matchés (négation extglob `!(...)`
+  supportée, voir ci-dessus) ;
+- `source.containing` (optionnel) : regex, flag `m` — ne compte que les
+  fichiers du glob dont le contenu matche (ex. les YAML contenant
+  `^routing:`). Un `containing` invalide est une `error`, pas un compte à 0.
+
+La comparaison citation/compte est **numérique**, pas textuelle : « 008 »
+matche un compte de 8 (chaînes de migrations zéro-paddées). Figé par un test.
 
 Tout ce qui est déterministe est une **`error`** : divergence, citation
 introuvable (doc reformulée), fichier cité manquant, pattern cassé. Un drift
@@ -142,9 +159,19 @@ dans une baseline de findings. Deux gardes-fous en plus :
   `citations[]` → `warning` (heuristique, faux positifs possibles). C'est
   comme ça qu'on attrape l'endroit que personne n'a déclaré.
 
-Le check couvre les faits énumérables (des fichiers qu'un glob sait compter).
-Les claims qualitatives d'une doc restent hors de portée d'une regex — c'est
-assumé, pas un manque.
+Le check couvre les faits énumérables (des fichiers qu'un glob sait compter,
+éventuellement filtrés par contenu). Les claims qualitatives d'une doc
+restent hors de portée d'une regex — c'est assumé, pas un manque. De même,
+une vérité qui exige d'exécuter une commande (ex. compte de tests via
+`pytest --co`) est volontairement hors périmètre : exécuter du shell déclaré
+dans une config est un cran de risque au-dessus (voir ADR-0004) ; passe par
+un badge ou un fichier généré par la CI pour ces cas-là.
+
+Piège vécu — un pattern qui matche deux sémantiques : si une même doc dit
+« 40 connecteurs » (sources seedées) et « 24 connecteurs » (types), le
+pattern `(\d+) connecteurs` produit un faux positif structurel. Deux sorties :
+resserrer le pattern, ou reformuler la doc (« 40 sources »). Le check force
+la précision du vocabulaire — c'est une feature, pas un bug.
 
 ## Tests
 
