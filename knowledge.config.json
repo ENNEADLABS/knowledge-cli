@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "counters": {
+      "enabled": true,
+      "discoveryGlob": "{README.md,docs/**/*.md}",
+      "items": [
+        {
+          "name": "commandes",
+          "source": { "glob": "!(cli|*.test).mjs" },
+          "citations": [{ "file": "README.md", "pattern": "(\\d+) commandes" }]
+        }
+      ]
+    }
+  }
+}

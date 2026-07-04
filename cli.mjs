@@ -34,13 +34,10 @@ async function main(argv) {
     return 1;
   }
 
-  let mod;
-  try {
-    mod = await import(modulePath);
-  } catch {
-    console.error(`Commande "${command}" pas encore implementee.`);
-    return 1;
-  }
+  // Pas de try/catch : toutes les commandes de COMMANDS existent. Une erreur
+  // d'import est un vrai bug de module et doit sortir avec sa stack, pas etre
+  // maquillee en "commande pas implementee".
+  const mod = await import(modulePath);
 
   const config = loadConfig(process.cwd());
   const exitCode = await mod.run(rest, config);

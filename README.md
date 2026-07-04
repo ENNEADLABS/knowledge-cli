@@ -16,8 +16,9 @@ la surveillent) et une dette de connaissance — pourquoi telle décision a ét�
 prise, quels fichiers sont sensibles à toucher, si la doc raconte encore la
 vérité du code. Personne ne surveille la seconde, en général.
 
-`knowledge` formalise ces vérifications en sept commandes, pensées pour être
-copiées telles quelles d'un repo à l'autre.
+`knowledge` formalise ces vérifications en 7 commandes, pensées pour être
+copiées telles quelles d'un repo à l'autre. (Ce « 7 » est lui-même gardé par
+le check de compteurs du repo — voir `knowledge.config.json`.)
 
 ## Design : config-driven, pas de code spécifique à un repo
 
