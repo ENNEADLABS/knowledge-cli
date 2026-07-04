@@ -2,7 +2,7 @@
   "name": "knowledge-cli",
   "version": "0.1.0",
   "type": "module",
-  "description": "CLI config-driven pour maintenir la couche de connaissance d'un repo : drift doc/code, ADR, cartographie de risque, contexte agent.",
+  "description": "CLI config-driven pour maintenir la couche de connaissance d'un repo : drift doc/code, compteurs cites vs comptes, ADR, cartographie de risque, snapshots exportables.",
   "license": "MIT",
   "repository": {
     "type": "git",

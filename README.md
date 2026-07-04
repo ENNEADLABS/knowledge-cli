@@ -6,8 +6,9 @@ Un CLI pour maintenir la couche de connaissance d'un repo — pas le code, la
 connaissance *sur* le code : les décisions d'architecture, la cartographie du
 projet, les zones à risque, la synchro entre la doc et la réalité.
 
-Le code a des linters et des formatters depuis toujours. La documentation
-n'a rien d'équivalent, alors qu'elle se périme exactement de la même façon.
+Le code a des linters et des formatters depuis toujours. La connaissance
+sur le code se périme exactement de la même façon — mais elle est rarement
+vérifiée mécaniquement. Ce CLI outille cette vérification.
 
 ## Pourquoi
 
@@ -65,7 +66,7 @@ section Configuration.
 |---|---|
 | `knowledge validate [--json]` | La doc et le code sont-ils encore synchronisés ? Taille de fichiers, marqueurs de dette (TODO/`any`/...), drift routes vs doc, compteurs cités vs comptés, intégrité ADR. Exit code ≠ 0 si une erreur est trouvée. |
 | `knowledge scan` | Snapshot complet du repo via [Repomix](https://repomix.com), + signaux de `validate`, écrits dans `.knowledge/` (gitignoré). |
-| `knowledge agent-context [--stdout]` | Snapshot allégé (exclut tests, dossiers volumineux) pour donner le contexte du repo à un agent IA. |
+| `knowledge agent-context [--stdout]` | Snapshot exportable du repo (exclut tests, dossiers volumineux) pour les contextes **sans accès au filesystem** : upload claude.ai, revue par un tiers. Daté, périmé à chaque commit — un agent qui a accès au repo travaille sur le repo vivant, pas sur ce snapshot. |
 | `knowledge adr new "<titre>"` | Crée une fiche de décision d'architecture, numérotée automatiquement, format [MADR](https://adr.github.io/madr/). |
 | `knowledge risk-map --diff` | Classe les fichiers changés (git diff) par domaine et par règle de risque configurée. |
 | `knowledge update` | Rapport de drift doc/code en lecture seule — n'écrit jamais rien. |
