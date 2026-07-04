@@ -62,7 +62,7 @@ section Configuration.
 
 | Commande | Rôle |
 |---|---|
-| `knowledge validate [--json]` | La doc et le code sont-ils encore synchronisés ? Taille de fichiers, marqueurs de dette (TODO/`any`/...), drift routes vs doc, intégrité ADR. Exit code ≠ 0 si une erreur est trouvée. |
+| `knowledge validate [--json]` | La doc et le code sont-ils encore synchronisés ? Taille de fichiers, marqueurs de dette (TODO/`any`/...), drift routes vs doc, compteurs cités vs comptés, intégrité ADR. Exit code ≠ 0 si une erreur est trouvée. |
 | `knowledge scan` | Snapshot complet du repo via [Repomix](https://repomix.com), + signaux de `validate`, écrits dans `.knowledge/` (gitignoré). |
 | `knowledge agent-context [--stdout]` | Snapshot allégé (exclut tests, dossiers volumineux) pour donner le contexte du repo à un agent IA. |
 | `knowledge adr new "<titre>"` | Crée une fiche de décision d'architecture, numérotée automatiquement, format [MADR](https://adr.github.io/madr/). |
@@ -92,7 +92,15 @@ défaut).
     "fileSize": { "enabled": true, "limits": [ /* { glob, maxLines, tolerance } */ ] },
     "debtMarkers": { "enabled": true, "filesGlob": "src/**/*.ts", "markers": ["TODO", "@ts-ignore"] },
     "docDrift": { "enabled": true, "routesGlob": "src/routes/*" },
-    "adrCoverage": { "enabled": true }
+    "adrCoverage": { "enabled": true },
+    "counters": {
+      "enabled": true,
+      "discoveryGlob": "{README.md,CLAUDE.md,docs/**/*.md}",
+      "items": [
+        // { name, source: { glob }, citations: [{ file, pattern }] }
+        // pattern = regex avec un groupe de capture sur le nombre cite
+      ]
+    }
   },
   "riskRules": [
     // { id, label, match (glob), severity: "warning" | "error" }
@@ -115,6 +123,29 @@ imbriqué dans une accolade (`db/{schema.ts,migrations/**}`).
 Markdown avec une colonne dont l'en-tête contient "route" (insensible à la
 casse). Si ton repo n'a pas ce genre de doc, laisse `docDrift.enabled: false`.
 
+`checks/counters.mjs` attrape les nombres qui mentent : une doc qui déclare
+« 17 routers » alors que le code en compte 19. Chaque compteur relie une
+vérité côté code (`source.glob`, nombre de fichiers matchés) aux endroits où
+le nombre est cité (`citations[]` : fichier + regex avec un groupe de capture
+sur le nombre — un compteur a typiquement plusieurs sites de citation).
+
+Tout ce qui est déterministe est une **`error`** : divergence, citation
+introuvable (doc reformulée), fichier cité manquant, pattern cassé. Un drift
+de compteur coûte 30 secondes à corriger — en `warning` il se normaliserait
+dans une baseline de findings. Deux gardes-fous en plus :
+
+- **Source vide = mesure invalide.** Si `source.glob` ne matche aucun fichier
+  (répertoire déménagé, glob périmé), le check émet une `error` et ne compare
+  rien — jamais de comparaison contre une fausse vérité.
+- **Découverte des sites non déclarés.** `discoveryGlob` balaye un ensemble de
+  docs avec les patterns de chaque compteur : une mention dans un fichier hors
+  `citations[]` → `warning` (heuristique, faux positifs possibles). C'est
+  comme ça qu'on attrape l'endroit que personne n'a déclaré.
+
+Le check couvre les faits énumérables (des fichiers qu'un glob sait compter).
+Les claims qualitatives d'une doc restent hors de portée d'une regex — c'est
+assumé, pas un manque.
+
 ## Tests
 
 ```bash
@@ -122,9 +153,10 @@ npm test
 ```
 
 Les fonctions de `checks/` et `lib/` sont pures et testées en isolation
-(fixtures en mémoire, pas de lecture disque). `cli.mjs`, `scan.mjs`,
-`adr.mjs`, `onboarding.mjs` sont de la glue non testée unitairement —
-vérifiées manuellement via leur usage réel.
+(fixtures en mémoire, pas de lecture disque). `onboarding.mjs` est testé sur
+filesystem réel (répertoire temporaire). `cli.mjs`, `scan.mjs`, `adr.mjs`
+sont de la glue non testée unitairement — vérifiées manuellement via leur
+usage réel.
 
 ## Genèse
 

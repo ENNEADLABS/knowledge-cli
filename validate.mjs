@@ -1,5 +1,6 @@
 import { existsSync, globSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { checkAdrCoverage } from "./checks/adr-coverage.mjs";
+import { checkCounters } from "./checks/counters.mjs";
 import { checkDebtMarkers } from "./checks/debt-markers.mjs";
 import { checkDocDrift } from "./checks/doc-drift.mjs";
 import { checkFileSize } from "./checks/file-size.mjs";
@@ -15,6 +16,7 @@ export function collectFindings(config) {
     ...(config.checks.debtMarkers.enabled ? runDebtMarkers(config) : []),
     ...(config.checks.docDrift.enabled ? runDocDrift(config) : []),
     ...(config.checks.adrCoverage.enabled ? runAdrCoverage(config) : []),
+    ...(config.checks.counters.enabled ? runCounters(config) : []),
   ];
 
   const violations = findings.filter((finding) => finding.severity === "error");
@@ -61,6 +63,28 @@ function runAdrCoverage(config) {
   const { decisionsDir } = config.paths;
   const fileNames = existsSync(decisionsDir) ? readdirSync(decisionsDir) : [];
   return checkAdrCoverage(fileNames);
+}
+
+function runCounters(config) {
+  const { items, discoveryGlob } = config.checks.counters;
+  if (items.length === 0) return [];
+
+  const counts = Object.fromEntries(
+    items.map(({ name, source }) => [name, uniqueFiles(globSync(source.glob)).length]),
+  );
+
+  const docs = {};
+  for (const { file } of items.flatMap(({ citations }) => citations)) {
+    if (!(file in docs)) docs[file] = existsSync(file) ? readFileSync(file, "utf-8") : null;
+  }
+
+  const discoveryDocs = discoveryGlob
+    ? Object.fromEntries(
+        uniqueFiles(globSync(discoveryGlob)).map((file) => [file, readFileSync(file, "utf-8")]),
+      )
+    : {};
+
+  return checkCounters({ items, counts, docs, discoveryDocs });
 }
 
 function uniqueFiles(paths) {

@@ -24,6 +24,20 @@
     },
     "adrCoverage": {
       "enabled": true
+    },
+    "counters": {
+      "enabled": true,
+      "discoveryGlob": "{README.md,CLAUDE.md,docs/**/*.md}",
+      "items": [
+        {
+          "name": "routers",
+          "source": { "glob": "api/routers/*.py" },
+          "citations": [
+            { "file": "docs/architecture.md", "pattern": "(\\d+) routers" },
+            { "file": "CLAUDE.md", "pattern": "(\\d+) routers" }
+          ]
+        }
+      ]
     }
   },
   "riskRules": [
