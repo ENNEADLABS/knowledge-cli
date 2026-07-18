@@ -2,6 +2,13 @@
 
 [![test](https://github.com/ENNEADLABS/knowledge-cli/actions/workflows/test.yml/badge.svg)](https://github.com/ENNEADLABS/knowledge-cli/actions/workflows/test.yml)
 
+> **Archivé (2026-07-18).** Bilan après deux semaines d'usage réel sur trois
+> repos : seul le check `counters` était gaté en CI (un repo, zéro run rouge
+> sur 40), les autres checks produisaient des findings que personne ne lisait,
+> et le vendoring coûtait plus de maintenance qu'il ne rendait de valeur. Les
+> trois intégrations ont été débranchées. L'idée à retenir si le besoin
+> revient : `counters` seul, en script stdlib copiable, gaté ou rien.
+
 Un CLI pour maintenir la couche de connaissance d'un repo — pas le code, la
 connaissance *sur* le code : les décisions d'architecture, la cartographie du
 projet, les zones à risque, la synchro entre la doc et la réalité.
